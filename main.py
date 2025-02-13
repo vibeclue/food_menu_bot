@@ -29,9 +29,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # файлы меню
-# MENU_PATH = os.getenv("MENU_PATH")
-MENU_PATH = "//synosync/OT1C/menu/"
-
+MENU_PATH = os.getenv("MENU_PATH")
 
 # клавиатура
 async def send_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, query_message=None) -> None:
@@ -101,7 +99,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             logger.exception(f"Неизвестная ошибка при отправке документа: {e}")
             await query.message.reply_text(f"Неизвестная ошибка: {e}")
     else:
-        logger.warning(f"Некорректный callback_data: {query.data} от {user.id}")  # когда несоответствие между названиеями и file_map
+        logger.warning(f"Некорректный callback_data: {query.data} от {user.id}")  # когда несоответствие между названиями и file_map
         await query.message.reply_text("Что-то пошло не так!")
 
 
