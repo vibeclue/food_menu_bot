@@ -77,7 +77,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         try:
             if os.path.exists(file_path):
                 modification_time = os.path.getmtime(file_path)
-                creation_date = datetime.fromtimestamp(modification_time).strftime('%Y-%m-%d %H:%M:%S')
+                creation_date = datetime.fromtimestamp(modification_time).strftime('%d.%m.%Y %H:%M')
                 with open(file_path, 'rb') as file:
                     await query.message.reply_document(
                         document=file,
