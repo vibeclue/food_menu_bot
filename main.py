@@ -19,6 +19,7 @@ Telegram Bot для отображения меню "BREMOR".
 """
 import os
 import logging
+from logging.handlers import TimedRotatingFileHandler
 from dotenv import load_dotenv
 from datetime import datetime
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -37,18 +38,26 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("telegram").setLevel(logging.WARNING)
 logging.getLogger("telegram.request").setLevel(logging.ERROR)
 
+# Настройка ротации логов
+log_handler = TimedRotatingFileHandler(
+    f"{LOG_DIR}/bot.log", when="midnight", interval=30, backupCount=3
+)
+log_handler.setFormatter(
+    logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+)
+log_handler.setLevel(logging.INFO)
+
+# Конфигурируем логирование
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler(f"{LOG_DIR}/bot.log", encoding="utf-8"),
-        logging.StreamHandler()  # вывод в консоль
-    ]
+    handlers=[log_handler, logging.StreamHandler()]  # Добавляем оба обработчика
 )
+
 logger = logging.getLogger(__name__)
 
 # файлы меню
 MENU_PATH = os.getenv("MENU_PATH")
+
 
 # клавиатура
 async def send_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, query_message=None) -> None:
@@ -141,7 +150,8 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             logger.exception(f"Неизвестная ошибка при отправке документа: {e}")
             await query.message.reply_text(f"Неизвестная ошибка: {e}")
     else:
-        logger.warning(f"Некорректный callback_data: {query.data} от {user.id}")  # когда несоответствие между названиями и file_map
+        logger.warning(
+            f"Некорректный callback_data: {query.data} от {user.id}")  # когда несоответствие между названиями и file_map
         await query.message.reply_text("Что-то пошло не так!")
 
 
