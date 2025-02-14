@@ -1,3 +1,22 @@
+"""
+Telegram Bot для отображения меню "BREMOR".
+
+Бот предоставляет пользователям возможность получить меню на завтрак или обед.
+Он использует Inline-кнопки для выбора и отправляет соответствующие файлы .xls,
+если они доступны в указанной директории. Также бот логирует все действия
+и ошибки в файлы логов.
+
+Основные функции:
+- /start: Отправляет пользователю меню с кнопками выбора.
+- Завтрак и Обед: При выборе соответствующей кнопки отправляется
+  файл с меню (если он существует в директории, указанной в MENU_PATH).
+- Логирование: Все действия и ошибки записываются в файл logs/bot.log.
+
+Файлы меню должны быть размещены в директории, указанной в переменной
+окружения MENU_PATH (например, в формате /app/venv/bin), и иметь названия:
+- breakfast.xls — для завтрака
+- lunch.xls — для обеда
+"""
 import os
 import logging
 from dotenv import load_dotenv
@@ -33,6 +52,14 @@ MENU_PATH = os.getenv("MENU_PATH")
 
 # клавиатура
 async def send_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, query_message=None) -> None:
+    """
+    Отправляет меню с кнопками "Завтрак" и "Обед" пользователю.
+
+    Args:
+        update (Update): Объект обновления от Telegram.
+        context (ContextTypes.DEFAULT_TYPE): Контекст исполнения команды.
+        query_message (Optional[Message]): Сообщение, вызвавшее команду. Используется для обновления кнопок.
+    """
     keyboard = [
         [
             InlineKeyboardButton("Завтрак", callback_data='breakfast'),
@@ -56,12 +83,27 @@ async def send_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, query_me
 
 # /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """
+    Обрабатывает команду /start и отправляет меню с кнопками пользователю.
+
+    Args:
+        update (Update): Объект обновления от Telegram.
+        context (ContextTypes.DEFAULT_TYPE): Контекст исполнения команды.
+    """
     logger.info(f"Пользователь с ID {update.effective_user.id} запустил /start.")
     await send_menu(update, context)
 
 
 # Обработка нажатия кнопок
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """
+    Обрабатывает нажатие на кнопки меню ("Завтрак" или "Обед").
+    Отправляет соответствующий файл пользователю.
+
+    Args:
+        update (Update): Объект обновления от Telegram.
+        context (ContextTypes.DEFAULT_TYPE): Контекст исполнения команды.
+    """
     query = update.callback_query
     user = update.effective_user
     await query.answer()
@@ -83,7 +125,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                         document=file,
                         caption=f"От {creation_date}"
                     )
-                    logger.info(f"Файл {file_name} отправлен пользователю с ID {user.id} {datetime.now()}.")
+                    logger.info(f"Файл {file_name} отправлен пользователю ID {user.id} {datetime.now()}.")
             else:
                 logger.warning(f"Файл {file_name} не найден! (запрос от {user.id})")
                 await query.message.reply_text("Файл не найден!")
@@ -104,6 +146,10 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 
 def main():
+    """
+    Основная точка входа в приложение.
+    Инициализирует бота, добавляет обработчики команд и запускает polling.
+    """
     TOKEN = os.getenv("TOKEN")
     if not TOKEN:
         logger.critical("Токен бота отсутствует! Укажите его в переменных окружения.")

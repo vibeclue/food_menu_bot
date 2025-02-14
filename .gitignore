@@ -1,4 +1,6 @@
 .env
+Dockerfile
+docker-compose.yml
 .idea/
 .venv/
 logs/
